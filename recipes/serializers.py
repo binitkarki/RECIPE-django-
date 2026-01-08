@@ -20,7 +20,8 @@ class RegisterSerializer(serializers.ModelSerializer):
 class RecipeSerializer(serializers.ModelSerializer):
     author = serializers.ReadOnlyField(source='author.username')
     likes_count = serializers.SerializerMethodField()
-    liked = serializers.SerializerMethodField()   # <-- add this field
+    liked = serializers.SerializerMethodField()   
+    image_url = serializers.SerializerMethodField()  # <-- absolute image URL
 
     class Meta:
         model = Recipe
@@ -30,12 +31,17 @@ class RecipeSerializer(serializers.ModelSerializer):
         return obj.likes.count()
 
     def get_liked(self, obj):
-        """Return True if the current user has liked this recipe."""
         request = self.context.get('request')
         user = getattr(request, 'user', None)
         if user and user.is_authenticated:
             return obj.likes.filter(id=user.id).exists()
         return False
+
+    def get_image_url(self, obj):
+        request = self.context.get('request')
+        if obj.image:
+            return request.build_absolute_uri(obj.image.url)
+        return None
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
@@ -43,18 +49,21 @@ class RecipeSerializer(serializers.ModelSerializer):
             line.strip() for line in (instance.ingredients or '').splitlines() if line.strip()
         ]
         lines = [line.strip() for line in (instance.steps or '').splitlines() if line.strip()]
-        data['steps'] = [line for line in lines]  # keep raw text; numbers handled in frontend
+        data['steps'] = [line for line in lines]
+        # Replace image field with absolute URL
+        data['image'] = data.pop('image_url', None)
         return data
 
 
 class BookmarkRecipeNestedSerializer(serializers.ModelSerializer):
     likes_count = serializers.SerializerMethodField()
-    liked = serializers.SerializerMethodField()   # <-- add liked here too
+    liked = serializers.SerializerMethodField()
+    image_url = serializers.SerializerMethodField()  # <-- absolute URL
 
     class Meta:
         model = Recipe
         fields = (
-            'id', 'title', 'image', 'difficulty',
+            'id', 'title', 'image', 'image_url', 'difficulty',
             'cooking_time', 'servings', 'category',
             'likes_count', 'liked'
         )
@@ -68,6 +77,12 @@ class BookmarkRecipeNestedSerializer(serializers.ModelSerializer):
         if user and user.is_authenticated:
             return obj.likes.filter(id=user.id).exists()
         return False
+
+    def get_image_url(self, obj):
+        request = self.context.get('request')
+        if obj.image:
+            return request.build_absolute_uri(obj.image.url)
+        return None
 
 
 class BookmarkSerializer(serializers.ModelSerializer):
