@@ -21,10 +21,9 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
-#CORS_ALLOWED_ORIGINS = [
- #   "https://recipe-sigma-blond.vercel.app", 
-  #  "https://*.vercel.app",                  
-#
+CORS_ALLOWED_ORIGINS = [
+    "https://recipe-react-mwlx.onrender.com"                  
+]
 
 STORAGES={
     "default":{
