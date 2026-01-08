@@ -25,6 +25,10 @@ CORS_ALLOWED_ORIGINS = [
     "https://recipe-react-mwlx.onrender.com"                  
 ]
 
+CORS_ALLOW_HEADERS = [
+    "content-type",
+    "authorization",
+]
 STORAGES={
     "default":{
         "BACKEND":"django.core.files.storage.FileSystemStorage",
@@ -43,3 +47,5 @@ DATABASES = {
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+
